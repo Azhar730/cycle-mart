@@ -1,46 +1,62 @@
+import { useGetTotalStockQuery } from "@/Redux/features/bicycle/bicycle.api";
+import {
+  useGetRecentSellingBicycleQuery,
+  useGetRevenueQuery,
+  useGetStockStatsQuery,
+  useGetTopSellingBicycleQuery,
+  useGetTotalSalesQuery,
+} from "@/Redux/features/order/order.api";
+import { useGetUserCountQuery } from "@/Redux/features/user/user.api";
 import { Users, DollarSign, Package, TrendingUp } from "lucide-react";
+import { Key, ReactElement, JSXElementConstructor, ReactNode, ReactPortal } from "react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+} from "recharts";
 
 const DashboardHome = () => {
-  // Demo data for analytics
+  const { data: totalSales } = useGetTotalSalesQuery({});
+  const { data: revenue } = useGetRevenueQuery({});
+  const { data: totalStock } = useGetTotalStockQuery({});
+  const { data: userCount } = useGetUserCountQuery({});
+  const { data: topSellingBicycle } = useGetTopSellingBicycleQuery({});
+  const { data: stockStats } = useGetStockStatsQuery({});
+  const { data: recentSellingBicycle } = useGetRecentSellingBicycleQuery({});
+
   const analyticsData = {
-    totalSales: 1250000,
-    monthlyRevenue: 320000,
-    totalInventory: 45,
-    customerSatisfaction: 4.8,
+    totalSales: totalSales?.data || 0,
+    monthlyRevenue: revenue?.data || 0,
+    totalInventory: totalStock?.data || 0,
+    totalUser: userCount?.data || 0,
   };
 
-  const popularVehicles = [
-  { name: "Trail Blazer", sales: 12, revenue: 600000, trend: "+15%" },
-  { name: "Speed Pro", sales: 8, revenue: 280000, trend: "+8%" },
-  { name: "Eco Urban", sales: 6, revenue: 210000, trend: "+5%" }
-]
-
-  const recentSales = [
-  {
-    id: 1,
-    customer: "John Smith",
-    bicycle: "Trail Blazer",
-    price: 65000,
-    date: "2024-03-15",
-    status: "Completed",
-  },
-  {
-    id: 2,
-    customer: "Sarah Johnson",
-    bicycle: "Speed Pro",
-    price: 75000,
-    date: "2024-03-14",
-    status: "Processing",
-  },
-  {
-    id: 3,
-    customer: "Michael Brown",
-    bicycle: "Eco Urban",
-    price: 58000,
-    date: "2024-03-13",
-    status: "Completed",
+  interface Sale {
+    _id: string;
+    customer: string;
+    bicycle: string;
+    price: number;
+    date: string;
+    status: string;
   }
-]
+
+  const recentSales =
+    recentSellingBicycle?.data?.map((sale: Sale) => ({
+      id: sale?._id,
+      customer: sale?.customer,
+      bicycle: sale?.bicycle,
+      price: sale?.price,
+      date: sale?.date,
+      status: sale?.status === "Paid" ? "Completed" : "Pending",
+    })) || [];
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -50,10 +66,29 @@ const DashboardHome = () => {
       maximumFractionDigits: 0,
     }).format(amount);
   };
+
+  const barChartData =
+    topSellingBicycle?.data?.map(
+      (bicycle: { name: string; sales: string }) => ({
+        name: bicycle.name,
+        sales: Number(bicycle.sales),
+      })
+    ) || [];
+
+  const pieChartData = [
+    {
+      name: "Sold",
+      value: stockStats?.data?.soldPercentage || 0,
+    },
+    {
+      name: "Available",
+      value: stockStats?.data?.availablePercentage || 0,
+    },
+  ];
+
   return (
     <main>
       <div className="max-w-7xl mx-auto">
-        {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">
             Welcome to Cycle Mart
@@ -105,7 +140,7 @@ const DashboardHome = () => {
                   Total Inventory
                 </p>
                 <p className="text-xl font-semibold text-gray-900">
-                  {analyticsData.totalInventory} vehicles
+                  {analyticsData.totalInventory} Bicycles
                 </p>
               </div>
             </div>
@@ -117,111 +152,112 @@ const DashboardHome = () => {
                 <Users className="w-6 h-6 text-yellow-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">
-                  Customer Rating
-                </p>
+                <p className="text-sm font-medium text-gray-600">Total User</p>
                 <p className="text-xl font-semibold text-gray-900">
-                  {analyticsData.customerSatisfaction}/5.0
+                  {analyticsData.totalUser}
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Popular Vehicles */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-800">
-                Popular Vehicles
-              </h2>
-            </div>
-            <div className="p-6">
-              <div className="space-y-4">
-                {popularVehicles.map((vehicle, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between"
-                  >
-                    <div>
-                      <p className="font-medium text-gray-900">
-                        {vehicle.name}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {vehicle.sales} units sold
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium text-gray-900">
-                        {formatCurrency(vehicle.revenue)}
-                      </p>
-                      <p className="text-sm text-green-600">{vehicle.trend}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Popular Vehicle Sales
+            </h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={barChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="sales" fill="#8884d8" />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
 
-          {/* Recent Sales */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-800">
-                Recent Sales
-              </h2>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Customer
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Vehicle
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Price
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {recentSales.map((sale) => (
-                    <tr key={sale.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {sale.customer}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {sale.bicycle}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {formatCurrency(sale.price)}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            sale.status === "Completed"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-yellow-100 text-yellow-800"
-                          }`}
-                        >
-                          {sale.status}
-                        </span>
-                      </td>
-                    </tr>
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Inventory Status
+            </h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={pieChartData}
+                  dataKey="value"
+                  nameKey="name"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                >
+                  {pieChartData.map((_entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={index === 0 ? "#0088FE" : "#FF8042"}
+                    />
                   ))}
-                </tbody>
-              </table>
-            </div>
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Recent Sales */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-800">
+              Recent Sales
+            </h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    Customer
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    Bicycle
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    Price
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {recentSales.map((sale: { id: Key | null | undefined; customer: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; bicycle: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; price: number; status: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; }) => (
+                  <tr key={sale.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {sale.customer}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {sale.bicycle}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {formatCurrency(sale.price)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          sale.status === "Completed"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
+                        {sale.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

@@ -51,10 +51,20 @@ const deleteUser = catchAsync(async (req, res) => {
     data: {},
   });
 });
+const getTotalUserCount = catchAsync(async (req, res) => {
+  const result = await userServices.getTotalUserCountFromDB();
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Users count successfully',
+    data: result,
+  });
+});
 export const userControllers = {
   createUser,
   getAllUser,
   getSingleUser,
   updateUser,
   deleteUser,
+  getTotalUserCount,
 };

@@ -30,12 +30,12 @@ const createOrderIntoDB = async (
   const shurjopayPayload = {
     amount: payload.totalPrice,
     order_id: newOrder._id,
-    currency: "BDT",
+    currency: 'BDT',
     customer_name: user.name,
     customer_address: payload.address,
     customer_email: user.email,
     customer_phone: payload.phone,
-    customer_city: user.city || "Dhaka",
+    customer_city: user.city || 'Dhaka',
     client_ip,
   };
 
@@ -92,7 +92,67 @@ const getRevenueFromDB = async () => {
       $project: { _id: 0, totalRevenue: 1 },
     },
   ]);
-  return result;
+  return result[0]?.totalRevenue || 0;
+};
+
+const getTotalSalesFromDB = async () => {
+  const result = await Order.aggregate([
+    {
+      $match: {
+        status: { $in: ['Paid', 'Completed', 'Pending'] },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalSales: { $sum: '$totalPrice' },
+      },
+    },
+  ]);
+
+  const totalSales = result[0]?.totalSales || 0;
+  return totalSales;
+};
+const getTopSellingBicyclesFromDB = async () => {
+  const result = await Order.aggregate([
+    {
+      $match: {
+        status: { $in: ['Paid', 'Completed', 'Pending'] },
+      },
+    },
+    {
+      $group: {
+        _id: '$bicycle',
+        sales: { $sum: '$quantity' },
+      },
+    },
+    {
+      $lookup: {
+        from: 'bicycles',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'bicycleInfo',
+      },
+    },
+    {
+      $unwind: '$bicycleInfo',
+    },
+    {
+      $project: {
+        _id: 0,
+        name: '$bicycleInfo.name',
+        sales: 1,
+      },
+    },
+    {
+      $sort: { sales: -1 },
+    },
+    {
+      $limit: 10, // top 10
+    },
+  ]);
+
+  return result; // this will be an array of { name, sales }
 };
 const getMyOrdersFromDB = async (id: string) => {
   const customer = await User.findById(id);
@@ -100,7 +160,7 @@ const getMyOrdersFromDB = async (id: string) => {
     throw new AppError(404, 'Customer not found !');
   }
   const result = await Order.find({ user: id });
-  return result
+  return result;
 };
 const getAllOrdersFromDB = async () => {
   const result = await Order.find().populate('bicycle');
@@ -122,6 +182,90 @@ const updateShippingStatusIntoDB = async (payload: {
   }
   return result;
 };
+export const getBicycleStockStatsFromDB = async () => {
+  // Step 1: Get total sold bicycles
+  const soldResult = await Order.aggregate([
+    {
+      $match: {
+        status: { $in: ['Paid', 'Shipped', 'Completed',"Pending"] },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalSold: { $sum: '$quantity' },
+      },
+    },
+  ]);
+
+  const totalSold = soldResult[0]?.totalSold || 0;
+
+  // Step 2: Get total available bicycles from Bicycle model
+  const bicycles = await Bicycle.find({ isDeleted: false, inStock: true }, 'quantity');
+  const totalAvailable = bicycles.reduce(
+    (sum, item) => sum + (item.quantity || 0),
+    0,
+  );
+
+  // Step 3: Calculate percentages
+  const total = totalSold + totalAvailable;
+  const soldPercentage = total ? (totalSold / total) * 100 : 0;
+  const availablePercentage = total ? (totalAvailable / total) * 100 : 0;
+
+  return { soldPercentage, availablePercentage };
+};
+const getRecentSellingBicyclesFromDB = async () => {
+  const recentSales = await Order.aggregate([
+    {
+      $match: {
+        status: { $in: ['Paid', 'Shipped', 'Completed',"Pending"] }, // Only include actual sales
+      },
+    },
+    { $sort: { createdAt: -1 } },
+    { $limit: 10 },
+
+    // Join with User collection
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'user',
+        foreignField: '_id',
+        as: 'userDetails',
+      },
+    },
+    { $unwind: '$userDetails' },
+
+    // Join with Bicycle collection
+    {
+      $lookup: {
+        from: 'bicycles',
+        localField: 'bicycle',
+        foreignField: '_id',
+        as: 'bicycleDetails',
+      },
+    },
+    { $unwind: '$bicycleDetails' },
+
+    // Format fields
+    {
+      $project: {
+        customer: '$userDetails.name',
+        bicycle: '$bicycleDetails.name',
+        price: '$totalPrice',
+        date: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+        status: '$status',
+      },
+    },
+  ]);
+
+  // Add `id` field manually
+  const resultWithId = recentSales.map((sale, index) => ({
+    id: index + 1,
+    ...sale,
+  }));
+
+  return resultWithId;
+};
 export const OrderServices = {
   createOrderIntoDB,
   verifyPayment,
@@ -129,4 +273,8 @@ export const OrderServices = {
   getMyOrdersFromDB,
   getAllOrdersFromDB,
   updateShippingStatusIntoDB,
+  getTotalSalesFromDB,
+  getTopSellingBicyclesFromDB,
+  getBicycleStockStatsFromDB,
+  getRecentSellingBicyclesFromDB
 };

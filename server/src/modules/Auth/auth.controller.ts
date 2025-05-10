@@ -30,6 +30,7 @@ const changePassword = catchAsync(async (req, res) => {
     message: result.message,
   });
 });
+
 const updateUserStatus = catchAsync(async (req, res) => {
   const payload = req.body;
   const result = await AuthServices.updateUserStatusIntoDB(payload);

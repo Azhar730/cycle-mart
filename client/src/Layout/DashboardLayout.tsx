@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import {
   Menu,
   X,
@@ -8,7 +8,7 @@ import {
   User,
   Users,
   LogOut,
-  Bike
+  Bike,
 } from "lucide-react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -20,16 +20,36 @@ const DashboardLayout = () => {
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectCurrentUser);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
   const role = user?.role || "customer";
   const navigate = useNavigate();
 
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(event.target as Node)
+      ) {
+        setProfileDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const menuItems =
-    role == "customer"
+    role === "customer"
       ? [
           { icon: Home, text: "Dashboard", path: "/dashboard" },
           { icon: BarChart3, text: "My Orders", path: "/dashboard/my-orders" },
-          { icon: Settings, text: "Profile", path: "/dashboard/my-profile" },
+          { icon: User, text: "Profile", path: "/dashboard/my-profile" },
+          {
+            icon: Settings,
+            text: "Settings",
+            path: "/dashboard/settings",
+          },
         ]
       : [
           { icon: Home, text: "Dashboard", path: "/dashboard" },
@@ -38,6 +58,7 @@ const DashboardLayout = () => {
             text: "Order Management",
             path: "/dashboard/order-management",
           },
+          { icon: BarChart3, text: "My Orders", path: "/dashboard/my-orders" },
           {
             icon: Users,
             text: "User Management",
@@ -74,7 +95,9 @@ const DashboardLayout = () => {
         }`}
       >
         <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
-          <Link to={'/'} className="text-xl font-semibold text-blue-400">Cycle Mart</Link>
+          <Link to="/" className="text-xl font-semibold text-blue-400">
+            Cycle Mart
+          </Link>
           <button
             onClick={() => setSidebarOpen(false)}
             className="p-2 rounded-md lg:hidden hover:bg-gray-100"
@@ -123,12 +146,52 @@ const DashboardLayout = () => {
         {/* Top Navigation */}
         <header className="fixed top-0 right-0 left-0 lg:left-64 bg-white border-b border-gray-200 z-40">
           <div className="flex items-center justify-between h-16 px-4">
+            {/* Sidebar toggle on small screens */}
             <button
               onClick={() => setSidebarOpen(true)}
               className="p-2 rounded-md lg:hidden hover:bg-gray-100"
             >
               <Menu className="w-5 h-5 text-gray-500" />
             </button>
+
+            {/* Empty div to keep spacing */}
+            <div></div>
+
+            {/* Profile Dropdown aligned to the right */}
+            <div className="relative ml-auto" ref={profileRef}>
+              <button
+                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100"
+              >
+                <User className="w-5 h-5 text-gray-600" />
+                <span className="text-sm font-medium text-gray-700 hidden sm:block">
+                  {user?.name || "User"}
+                </span>
+              </button>
+
+              {profileDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-md z-50">
+                  <Link
+                    to="/dashboard/my-profile"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setProfileDropdownOpen(false)}
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    onClick={() => {
+                      dispatch(logout());
+                      localStorage.removeItem("token");
+                      toast.success("Logged out successfully");
+                      navigate("/login");
+                    }}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 

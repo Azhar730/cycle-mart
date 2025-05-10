@@ -8,10 +8,10 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 
 const register = async (payload: IUser) => {
   // Check if the user already exists
-  const user = await User.find({ email: payload.email });
-  if (user) {
-    throw new AppError(409, 'User already exists !');
-  }
+  // const user = await User.find({ email: payload.email });
+  // if (user) {
+  //   throw new AppError(409, 'User is already exists !');
+  // }
   const result = await User.create(payload);
   return {
     _id: result?._id,
@@ -54,7 +54,6 @@ const login = async (payload: TLoginUser) => {
     token,
   };
 };
-
 const changePassword = async (
   payload: {
     currentPassword: string;
@@ -63,7 +62,7 @@ const changePassword = async (
   user: JwtPayload,
 ) => {
   const { currentPassword, newPassword } = payload;
-  const userForCheck = await User.findById(user?.userId).select('+password');
+  const userForCheck = await User.findById(user?.id).select('+password');
   // Check if the current password matches
   if (!userForCheck?.password) {
     throw new AppError(403, 'Password not found');
@@ -88,6 +87,7 @@ const changePassword = async (
     message: 'Password changed successfully',
   };
 };
+
 const updateUserStatusIntoDB = async (payload: {
   id: string;
   status: string;

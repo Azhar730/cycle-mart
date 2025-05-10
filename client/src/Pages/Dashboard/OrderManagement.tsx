@@ -99,7 +99,7 @@ const OrderManagement = () => {
                       Quantity: {order?.quantity}
                     </div>
                     <div className="text-sm font-medium text-gray-900">
-                      Total: ${order?.totalPrice.toLocaleString()}
+                      Total: ${order?.totalPrice}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

@@ -6,6 +6,7 @@ import { validateRequest } from '../../middlewares/validateRequest';
 import { bicycleValidationSchema } from './Bicycle.validation';
 
 const router = Router();
+router.get('/total-stock', BicycleControllers.getTotalStock);
 router.post(
   '/create-bicycle',
   auth('admin'),
@@ -18,6 +19,7 @@ router.post(
   BicycleControllers.createBicycle,
 );
 router.get('/:productId', BicycleControllers.getSingleBicycle);
+
 router.put(
   '/:productId',
   auth('admin'),

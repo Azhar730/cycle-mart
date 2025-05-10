@@ -30,6 +30,24 @@ const getRevenue = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const getTotalSales = catchAsync(async (req, res) => {
+  const result = await OrderServices.getTotalSalesFromDB();
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Total sales retrieved successfully',
+    data: result,
+  });
+});
+const getTopSellingBicycle = catchAsync(async (req, res) => {
+  const result = await OrderServices.getTopSellingBicyclesFromDB();
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Top selling bicycles are retrieved successfully',
+    data: result,
+  });
+});
 const getMyOrders = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await OrderServices.getMyOrdersFromDB(id);
@@ -49,12 +67,31 @@ const getAllOrders = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
 const updateShippingStatus = catchAsync(async (req, res) => {
   const result = await OrderServices.updateShippingStatusIntoDB(req.body);
   sendResponse(res, {
     statusCode: 200,
     success: true,
     message: 'Order status updated successfully',
+    data: result,
+  });
+});
+const getBicycleStockStats = catchAsync(async (req, res) => {
+  const result = await OrderServices.getBicycleStockStatsFromDB();
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Order stats retrieved successfully',
+    data: result,
+  });
+});
+const getRecentSellingBicycles = catchAsync(async (req, res) => {
+  const result = await OrderServices.getRecentSellingBicyclesFromDB();
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Recent Selling Bicycle retrieved successfully',
     data: result,
   });
 });
@@ -65,4 +102,8 @@ export const OrderControllers = {
   getMyOrders,
   getAllOrders,
   updateShippingStatus,
+  getTotalSales,
+  getTopSellingBicycle,
+  getBicycleStockStats,
+  getRecentSellingBicycles
 };

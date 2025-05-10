@@ -5,7 +5,11 @@ import { userControllers } from './user.controller';
 import auth from '../../middlewares/auth';
 
 const userRoute = Router();
-
+userRoute.get(
+  '/user-count',
+  //   auth('admin', 'customer'),
+  userControllers.getTotalUserCount,
+);
 userRoute.post(
   '/create-admin',
   auth('admin'),
@@ -13,7 +17,8 @@ userRoute.post(
   userControllers.createUser,
 );
 userRoute.get('/:userId', userControllers.getSingleUser);
-userRoute.put('/:userId',auth('admin'), userControllers.updateUser);
-userRoute.delete('/:userId',auth('admin'), userControllers.deleteUser);
-userRoute.get('/',auth('admin'), userControllers.getAllUser);
+userRoute.put('/:userId', auth('admin'), userControllers.updateUser);
+userRoute.delete('/:userId', auth('admin'), userControllers.deleteUser);
+userRoute.get('/', auth('admin'), userControllers.getAllUser);
+
 export const UserRoutes = userRoute;

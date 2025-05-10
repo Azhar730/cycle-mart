@@ -55,10 +55,20 @@ const deleteBicycle = catchAsync(async (req, res) => {
     data: {},
   });
 });
+const getTotalStock = catchAsync(async (req, res) => {
+  const result = await BicycleServices.getTotalStockFromDB();
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Stock stats retrieved successfully',
+    data: result,
+  });
+});
 export const BicycleControllers = {
   createBicycle,
   getAllBicycle,
   getSingleBicycle,
   updateBicycle,
   deleteBicycle,
+  getTotalStock
 };

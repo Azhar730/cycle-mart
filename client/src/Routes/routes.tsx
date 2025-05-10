@@ -21,6 +21,11 @@ import MyOrders from "@/Pages/Dashboard/MyOrder";
 import ErrorPage from "@/Pages/Error";
 import ProtectedRoute from "./ProtectedRoute";
 import PrivateRoute from "./PrivateRoute";
+import CategoryDetails from "@/Pages/CategoryDetails";
+import Blogs from "@/Pages/Blogs";
+import BlogDetailsPage from "@/Pages/BlogDetails";
+import Contact from "@/Pages/Contact";
+import Faq from "@/Pages/Faq";
 
 const router = createBrowserRouter([
   {
@@ -37,12 +42,28 @@ const router = createBrowserRouter([
         element: <AllBicycles />,
       },
       {
+        path: "/blogs",
+        element: <Blogs />,
+      },
+      {
+        path: "/contact",
+        element: <Contact />,
+      },
+      {
+        path: "/faq",
+        element: <Faq />,
+      },
+      {
+        path: "/blogs/:id",
+        element: <BlogDetailsPage />,
+      },
+      {
         path: "/bicycle/:id",
-        element: (
-          <PrivateRoute>
-            <BicycleDetails />
-          </PrivateRoute>
-        ),
+        element: <BicycleDetails />,
+      },
+      {
+        path: "/categories/:category",
+        element: <CategoryDetails />,
       },
       {
         path: "/checkout",

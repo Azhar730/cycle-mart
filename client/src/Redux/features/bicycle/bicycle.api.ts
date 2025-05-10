@@ -25,6 +25,13 @@ const bicycleApi = baseApi.injectEndpoints({
       }),
       providesTags: ["bicycles"],
     }),
+    getTotalStock: builder.query({
+      query: () => ({
+        url: `/bicycles/total-stock`,
+        method: "GET",
+      }),
+      providesTags: ["bicycles"],
+    }),
     deleteBicycle: builder.mutation({
       query: (id) => ({
         url: `/bicycles/${id}`,
@@ -56,4 +63,5 @@ export const {
   useAddBicycleMutation,
   useDeleteBicycleMutation,
   useUpdateBicycleMutation,
+  useGetTotalStockQuery
 } = bicycleApi;

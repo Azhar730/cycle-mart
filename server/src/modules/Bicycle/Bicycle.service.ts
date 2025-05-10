@@ -64,10 +64,29 @@ const deleteBicycleFromDB = async (id: string) => {
   );
   return result;
 };
+const getTotalStockFromDB = async () => {
+  const result = await Bicycle.aggregate([
+    {
+      $match: {
+        isDeleted: false,
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalStock: { $sum: '$quantity' },
+      },
+    },
+  ]);
+
+  const totalStock = result[0]?.totalStock || 0;
+  return totalStock;
+};
 export const BicycleServices = {
   createBicycleIntoDB,
   getAllBicycleFromDB,
   getSingleBicycleFromDB,
   updateBicycleIntoDB,
   deleteBicycleFromDB,
+  getTotalStockFromDB
 };

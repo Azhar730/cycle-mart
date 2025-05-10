@@ -23,13 +23,48 @@ const orderApi = baseApi.injectEndpoints({
       }),
       providesTags: ["orders"],
     }),
-      verifyOrder: builder.query({
-        query: (order_id) => ({
-          url: "/orders/verify",
-          params: { order_id },
-          method: "GET",
-        }),
+    getTotalSales: builder.query({
+      query: () => ({
+        url: `/orders/total-sales`,
+        method: "GET",
       }),
+      providesTags: ["orders"],
+    }),
+    getTopSellingBicycle: builder.query({
+      query: () => ({
+        url: `/orders/top-selling-bicycle`,
+        method: "GET",
+      }),
+      providesTags: ["orders"],
+    }),
+    getRecentSellingBicycle: builder.query({
+      query: () => ({
+        url: `/orders/recent-selling-bicycle`,
+        method: "GET",
+      }),
+      providesTags: ["orders"],
+    }),
+    getRevenue: builder.query({
+      query: () => ({
+        url: `/orders/revenue`,
+        method: "GET",
+      }),
+      providesTags: ["orders"],
+    }),
+    getStockStats: builder.query({
+      query: () => ({
+        url: `/orders/stock-stats`,
+        method: "GET",
+      }),
+      providesTags: ["orders"],
+    }),
+    verifyOrder: builder.query({
+      query: (order_id) => ({
+        url: "/orders/verify",
+        params: { order_id },
+        method: "GET",
+      }),
+    }),
     updateOrderStatus: builder.mutation({
       query: (payload) => ({
         url: "/orders/update-status",
@@ -46,4 +81,9 @@ export const {
   useGetMyOrderQuery,
   useVerifyOrderQuery,
   useUpdateOrderStatusMutation,
+  useGetTotalSalesQuery,
+  useGetRevenueQuery,
+  useGetTopSellingBicycleQuery,
+  useGetStockStatsQuery,
+  useGetRecentSellingBicycleQuery,
 } = orderApi;

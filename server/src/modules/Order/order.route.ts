@@ -13,7 +13,27 @@ router.get(
   auth('customer', 'admin'),
   OrderControllers.verifyPayment,
 );
-router.get('/revenue', auth('admin'), OrderControllers.getRevenue);
+router.get('/revenue', OrderControllers.getRevenue);
+router.get(
+  '/total-sales',
+  // auth('admin', 'customer'),
+  OrderControllers.getTotalSales,
+);
+router.get(
+  '/stock-stats',
+  // auth('admin', 'customer'),
+  OrderControllers.getBicycleStockStats,
+);
+router.get(
+  '/top-selling-bicycle',
+  // auth('admin', 'customer'),
+  OrderControllers.getTopSellingBicycle,
+);
+router.get(
+  '/recent-selling-bicycle',
+  // auth('admin', 'customer'),
+  OrderControllers.getRecentSellingBicycles,
+);
 router.get('/:id', auth('customer', 'admin'), OrderControllers.getMyOrders);
 router.get('/', auth('admin'), OrderControllers.getAllOrders);
 router.patch(

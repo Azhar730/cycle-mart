@@ -58,13 +58,13 @@ userSchema.statics.isPasswordMatched = async function (
   return await bcrypt.compare(plainTextPassword, hashedPassword);
 };
 
-userSchema.pre('save', async function (next) {
-  const existingUser = await User.findOne({ email: this.email });
-  if (existingUser) {
-    throw new Error('User is already exists');
-  }
-  next();
-});
+// userSchema.pre('save', async function (next) {
+//   const existingUser = await User.findOne({ email: this.email });
+//   if (existingUser) {
+//     throw new Error('User is already exists');
+//   }
+//   next();
+// });
 const User = model<IUser, UserModel>('User', userSchema);
 
 export default User;
