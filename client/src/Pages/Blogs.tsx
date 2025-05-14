@@ -11,7 +11,7 @@ const Blogs = () => {
 
   return (
     <section className="py-16 bg-gray-50 mt-20">
-      <div className="container mx-auto px-4">
+      <div className="px-4">
         <motion.h2
           className="text-3xl md:text-4xl font-bold text-center text-primary mb-12"
           initial={{ opacity: 0, y: -30 }}

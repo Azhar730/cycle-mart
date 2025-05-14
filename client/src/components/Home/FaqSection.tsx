@@ -43,34 +43,31 @@ const FaqSection = () => {
 
   return (
     <section className="py-20 px-4 bg-gray-50">
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-3xl md:text-4xl font-bold text-center text-primary mb-12">
-          Frequently Asked Questions
-        </h2>
-
-        <div className="space-y-4">
-          {faqs.map((faq, index) => (
-            <div
-              key={index}
-              className="bg-white border border-gray-200 rounded-xl shadow-sm"
+      <h2 className="text-3xl md:text-4xl font-bold text-center text-primary mb-12">
+        Frequently Asked Questions
+      </h2>
+      <div className="space-y-4">
+        {faqs.map((faq, index) => (
+          <div
+            key={index}
+            className="bg-white border border-gray-200 rounded-xl shadow-sm"
+          >
+            <button
+              onClick={() => toggle(index)}
+              className="w-full flex justify-between items-center px-6 py-4 text-left"
             >
-              <button
-                onClick={() => toggle(index)}
-                className="w-full flex justify-between items-center px-6 py-4 text-left"
-              >
-                <span className="font-medium text-gray-800">{faq.question}</span>
-                <FaChevronDown
-                  className={`transition-transform ${
-                    activeIndex === index ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
-              {activeIndex === index && (
-                <div className="px-6 pb-4 text-gray-600">{faq.answer}</div>
-              )}
-            </div>
-          ))}
-        </div>
+              <span className="font-medium text-gray-800">{faq.question}</span>
+              <FaChevronDown
+                className={`transition-transform ${
+                  activeIndex === index ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+            {activeIndex === index && (
+              <div className="px-6 pb-4 text-gray-600">{faq.answer}</div>
+            )}
+          </div>
+        ))}
       </div>
     </section>
   );

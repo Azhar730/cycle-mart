@@ -21,7 +21,7 @@ const CategoriesSection = () => {
   };
 
   return (
-    <div className="my-16 px-4 max-w-6xl mx-auto">
+    <div className="my-16 px-4">
       <SectionHead heading="Browse by Categories" />
 
       <motion.div
